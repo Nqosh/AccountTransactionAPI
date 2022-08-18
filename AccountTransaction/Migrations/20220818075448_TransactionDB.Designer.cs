@@ -6,10 +6,10 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace AccountTransaction.Migrations
+namespace Customer_API.Migrations
 {
     [DbContext(typeof(AccountTransactionDbContext))]
-    [Migration("20220816190246_TransactionDB")]
+    [Migration("20220818075448_TransactionDB")]
     partial class TransactionDB
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -47,16 +47,13 @@ namespace AccountTransaction.Migrations
                     b.Property<long>("AccountNr")
                         .HasColumnType("INTEGER");
 
-                    b.Property<long>("AccountNrTo")
-                        .HasColumnType("INTEGER");
-
                     b.Property<decimal>("Amount")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("DateCreated")
+                    b.Property<string>("Payload")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("TransactionType")
+                    b.Property<int>("UniqueId")
                         .HasColumnType("INTEGER");
 
                     b.Property<Guid>("referenceId")

@@ -1,7 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-using System;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace AccountTransaction.Migrations
+namespace Customer_API.Migrations
 {
     public partial class TransactionDB : Migration
     {
@@ -28,12 +28,11 @@ namespace AccountTransaction.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    UniqueId = table.Column<int>(type: "INTEGER", nullable: false),
                     referenceId = table.Column<Guid>(type: "TEXT", nullable: false),
                     AccountNr = table.Column<long>(type: "INTEGER", nullable: false),
-                    AccountNrTo = table.Column<long>(type: "INTEGER", nullable: false),
                     Amount = table.Column<decimal>(type: "TEXT", nullable: false),
-                    TransactionType = table.Column<int>(type: "INTEGER", nullable: false),
-                    DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Payload = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {

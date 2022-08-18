@@ -98,6 +98,10 @@ namespace AccountTransaction.Services
                             // add the Transaction to Transaction Table for Audit
                             AddTransaction(referenceId, accountNr, 0, amount);
                         }
+                        else
+                        {
+                            throw new ApplicationException("Account Doesnt Exist, Please Deposit First!!");
+                        }
                         break;
                     default:
                         break;

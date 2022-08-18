@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace AccountTransaction.Migrations
+namespace Customer_API.Migrations
 {
     [DbContext(typeof(AccountTransactionDbContext))]
     partial class AccountTransactionDbContextModelSnapshot : ModelSnapshot
@@ -45,16 +45,13 @@ namespace AccountTransaction.Migrations
                     b.Property<long>("AccountNr")
                         .HasColumnType("INTEGER");
 
-                    b.Property<long>("AccountNrTo")
-                        .HasColumnType("INTEGER");
-
                     b.Property<decimal>("Amount")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("DateCreated")
+                    b.Property<string>("Payload")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("TransactionType")
+                    b.Property<int>("UniqueId")
                         .HasColumnType("INTEGER");
 
                     b.Property<Guid>("referenceId")
