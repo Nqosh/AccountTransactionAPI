@@ -2,6 +2,7 @@
 using AccountTransaction.Model;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,7 +17,7 @@ namespace AccountTransaction.Services
             _context = context;
             _logger = logger;
         }
-        public Task DepositWithDrawal(Guid referenceId, long accountNr, decimal amount)
+        public async Task<bool> DepositWithDrawal(Guid referenceId, long accountNr, decimal amount)
         {
             _logger.LogInformation("Checking duplicate transaction");
 
@@ -28,7 +29,7 @@ namespace AccountTransaction.Services
 
                 Account account = GetAccount(accountNr);
 
-                switch (Helpers.TransactionType.TransactionTypeEnum)
+                switch (Helpers.TransactionType.Type)
                 {
                     case TransactionType.Deposit:
 
@@ -40,19 +41,23 @@ namespace AccountTransaction.Services
 
                             var accountCounter = GetAccountCount();
                             accountCounter++;
-                            _context.Accounts.Add(new Account()
-                            {
-                                Id = accountCounter,
-                                referenceId = referenceId,
-                                AccountNr = accountNr,
-                                Balance = amount
-                            });
+                            var isAccountCreated = await CreateAccount(new Account { Id = accountCounter, referenceId = referenceId, AccountNr = accountNr, Balance = amount });
 
-                            _logger.LogInformation("Adding transaction for a deposit transation");
-                            // add the Transaction to Transaction Table for Audit
-                            AddTransaction(referenceId, accountNr, 0, amount);
+                            if (isAccountCreated)
+                            {
+                                _logger.LogInformation("Adding transaction for a deposit transation");
+                                // add the Transaction to Transaction Table for Audit
+                                if (AddTransaction(referenceId, accountNr, 0, amount, amount))
+                                {
+                                    if (TrySave())
+                                    {
+                                        return true;
+                                    }
+                                }
+                            }
+                            return false;
                         }
-                        if (account != null)
+                        else
                         {
                             if (amount > 0)
                             {
@@ -61,14 +66,20 @@ namespace AccountTransaction.Services
                                 _logger.LogInformation("Adding transaction for an additional deposit transation");
 
                                 // add the Transaction to Transaction Table for Audit
-                                AddTransaction(referenceId, accountNr, 0, amount);
+                                if (AddTransaction(referenceId, accountNr, 0, account.Balance, amount))
+                                {
+                                    if (TrySave())
+                                    {
+                                        return true;
+                                    }
+                                }
+                                return false;
                             }
                             else
                             {
                                 throw new ApplicationException("deposit an amount more than zero!!");
                             }
                         }
-                        break;
                     case TransactionType.Withdrawal:
 
                         _logger.LogInformation("Entering the Withdrawal transaction process");
@@ -96,29 +107,35 @@ namespace AccountTransaction.Services
 
                             _logger.LogInformation("Adding Withdrawal transaction");
                             // add the Transaction to Transaction Table for Audit
-                            AddTransaction(referenceId, accountNr, 0, amount);
+                            if (AddTransaction(referenceId, accountNr, 0, account.Balance, amount))
+                            {
+                                if (TrySave())
+                                {
+                                    return true;
+                                }
+                            }
+                            return false;
                         }
                         else
                         {
                             throw new ApplicationException("Account Doesnt Exist, Please Deposit First!!");
                         }
-                        break;
                     default:
                         break;
                 }
             }
             else
             {
-                return Task.FromException(new Exception("Transaction is a Duplicate"));
+                throw new Exception("Transaction is a Duplicate");
             }
             if (!TrySave())
             {
-                return Task.FromException(new Exception("Transaction Failed"));
+                return false;
             }
-            Helpers.TransactionType.TransactionTypeEnum = TransactionType.None;
-            return Task.CompletedTask;
+            Helpers.TransactionType.Type = TransactionType.None;
+            return true;
         }
-        public Task Transfer(Guid referenceId, long accountNrFrom, long AccountNrTo, decimal amount)
+        public async Task<bool> Transfer(Guid referenceId, long accountNrFrom, long AccountNrTo, decimal amount)
         {
             if (amount <= 0)
             {
@@ -155,18 +172,46 @@ namespace AccountTransaction.Services
 
                 _logger.LogInformation("Adding Transfer transaction");
 
-                AddTransaction(referenceId, fromAccount.AccountNr, toAccount.AccountNr, amount);
+                if (AddTransaction(referenceId, toAccount.AccountNr, 0, toAccount.Balance, amount))
+                    if (AddTransaction(referenceId, fromAccount.AccountNr, 0, fromAccount.Balance, amount))
+                    {
+                        if (TrySave())
+                        {
+                            Helpers.TransactionType.Type = TransactionType.None;
+                            return true;
+                        }
+                    }
+                return false;
             }
             else
             {
-                return Task.FromException(new Exception("Transaction is a duplicate!!"));
+                return false;
+            }
+        }
+        public async Task<bool> CreateAccount(Account account)
+        {
+            if (account != null)
+            {
+                var accountCounter = GetAccountCount();
+                accountCounter++;
+                _context.Accounts.Add(new Account()
+                {
+                    Id = accountCounter,
+                    referenceId = account.referenceId,
+                    AccountNr = account.AccountNr,
+                    Balance = account.Balance
+                });
             }
             if (!TrySave())
             {
-                return Task.FromException(new Exception("Transaction Failed"));
+                return false;
             }
-            AccountTransaction.Helpers.TransactionType.TransactionTypeEnum = TransactionType.None;
-            return Task.CompletedTask;
+            return true;
+        }
+        public async Task<List<Transaction>> GetAccountTransactions(long accountNr)
+        {
+            var accountList = _context.Transactions.Where(x => x.AccountNr == accountNr).ToList();
+            return accountList;
         }
         public bool TrySave()
         {
@@ -200,17 +245,26 @@ namespace AccountTransaction.Services
             int count = _context.Accounts.Count();
             return count;
         }
-        private void AddTransaction(Guid referenceId, long accountNr, long AccountNrTo, decimal amount)
+        private bool AddTransaction(Guid referenceId, long accountNr, long AccountNrTo, decimal balance, decimal amount)
         {
-            var counter = GetTransactionCount();
-            counter++;
-            _context.Transactions.Add(new Transaction()
+            try
             {
-                UniqueId = counter,
-                referenceId = referenceId,
-                AccountNr = accountNr,
-                Amount = amount
-            });
+                var counter = GetTransactionCount();
+                counter++;
+                _context.Transactions.Add(new Transaction()
+                {
+                    UniqueId = counter,
+                    referenceId = referenceId,
+                    AccountNr = accountNr,
+                    Balance = balance,
+                    Amount = -amount
+                });
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+            return true;
         }
         private int GetTransactionCount()
         {

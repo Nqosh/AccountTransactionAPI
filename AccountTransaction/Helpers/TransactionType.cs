@@ -4,6 +4,6 @@
     {
         //public static bool IsDeposit { get; set; }
 
-        public static Data.TransactionType TransactionTypeEnum { get; set; }
+        public static Data.TransactionType Type { get; set; }
     }
 }

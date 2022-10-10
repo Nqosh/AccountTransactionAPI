@@ -8,6 +8,8 @@ namespace AccountTransaction.Core
         {
             CreateMap<Model.Transaction, DTOs.DepositWithdrawalDto>().ReverseMap();
             CreateMap<Model.Transaction, DTOs.DepositWithdrawalDto>().ReverseMap();
+            CreateMap<Model.User, DTOs.UserForRegisterDto>().ReverseMap();
+            CreateMap<Model.User, DTOs.UserForListDto>().ReverseMap();
         }
     }
 }

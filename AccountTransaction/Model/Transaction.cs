@@ -9,6 +9,7 @@ namespace AccountTransaction.Model
         public Guid referenceId { get; set; }
         public long AccountNr { get; set; }
         public decimal Amount { get; set; }
+        public decimal Balance { get; set; }
         public string Payload { get; set; }
     }
 }
