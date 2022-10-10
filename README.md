@@ -10,8 +10,8 @@ You can download the solution by doing a git clone on (powershell, gitbash or an
 4 Then you can transact with the deposit or withdrawal end point below 
 ![image](https://user-images.githubusercontent.com/31209722/194861120-f8319b08-9087-42c9-a553-3e2690f314d6.png)
 5) To deposit here is an example of how you would fille the swagger form below
-The Userid is generated for you in the response of the Login end point
-You can use the below link to generate a guid for the refrenceId 
+- The Userid is generated for you in the response of the Login end point
+- You can use the below link to generate a guid for the refrenceId 
 https://www.guidgenerator.com/online-guid-generator.aspx
 # On the Transaction Types 
 - 1 is for Withdrawal 
