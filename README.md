@@ -11,6 +11,7 @@ You can download the solution by doing a git clone on (powershell, gitbash or an
 ![image](https://user-images.githubusercontent.com/31209722/194861120-f8319b08-9087-42c9-a553-3e2690f314d6.png)
 5) To deposit here is an example of how you would fille the swagger form below
 You can use the below link to generate a guid for the refrenceId 
+- The Userid is generated for you in the response of the Login end point
 https://www.guidgenerator.com/online-guid-generator.aspx
 # On the Transaction Types 
 - 1 is for Withdrawal 
