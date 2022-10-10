@@ -1,4 +1,7 @@
-﻿using System;
+﻿using AccountTransaction.Data;
+using Newtonsoft.Json.Converters;
+using System;
+using System.Text.Json.Serialization;
 
 namespace AccountTransaction.Model
 {

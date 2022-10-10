@@ -3,6 +3,7 @@ using AccountTransaction.DTOs;
 using AccountTransaction.Model;
 using AccountTransaction.Services;
 using AutoMapper;
+using Customer_API.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
@@ -49,14 +50,24 @@ namespace AccountTransaction.Controllers
             {
                 Helpers.TransactionType.Type = TransactionType.Withdrawal;
             }
-            _logger.LogInformation("Entering DepositWithDrawal Method");
 
-            if (!await _accountTransactionService.DepositWithDrawal(transaction.referenceId, transaction.AccountNr, transaction.Amount))
+            _logger.LogInformation("Check if Account exists Method");
+            var account = await _accountTransactionService.GetAccount(transaction.AccountNr);
+
+            if (account != null)
             {
-                return BadRequest("Transaction could not be Implemented");
+                _logger.LogInformation("Entering DepositWithDrawal Method");
+                if (!await _accountTransactionService.DepositWithDrawal(transaction.referenceId, transaction.AccountNr, transaction.Amount, account))
+                {
+                    return BadRequest("Transaction could not be Implemented");
+                }
+                _logger.LogInformation("Exiting DepositWithDrawal Method");
             }
-            _logger.LogInformation("Exiting DepositWithDrawal Method");
-            return Ok("Transaction Succesful!!!");
+            else
+            {
+                return BadRequest("Account does not exist, Please create one");
+            }
+            return Ok("Transaction Successfull!!!");
         }
 
         /// <summary>
@@ -65,7 +76,7 @@ namespace AccountTransaction.Controllers
         /// <returns></returns>
         // Post: api/<TransactionController>
         [HttpPost("createAccount")]
-        public async Task<IActionResult> AddAccount(int userId, Account account)
+        public async Task<IActionResult> AddAccount(int userId, CreateAccountDto account)
         {
 
             if (Helpers.Claims.ClaimsArr == null)
@@ -73,11 +84,20 @@ namespace AccountTransaction.Controllers
             if (userId != int.Parse(Helpers.Claims.ClaimsArr[0].Value))
                 return Unauthorized();
 
-            if (!await _accountTransactionService.CreateAccount(account))
+            var acc = await _accountTransactionService.GetAccount(account.AccountNr);
+
+            if (acc == null)
             {
-                return BadRequest("Account could not be created");
+                if (!await _accountTransactionService.CreateAccount(account))
+                {
+                    return BadRequest("Account could not be created");
+                }
+                return Ok("Account Created Successfully");
             }
-            return Ok("Account Created Successfully");
+            else
+            {
+                return BadRequest("Account already Exists");
+            } 
         }
 
         /// <summary>
@@ -98,7 +118,7 @@ namespace AccountTransaction.Controllers
             {
                 return BadRequest("Transfer failed");
             }
-            return Ok("Transfer Succesfull!!!"); ;
+            return Ok("Transfer Successfull!!!"); ;
         }
 
         /// <summary>
@@ -114,10 +134,36 @@ namespace AccountTransaction.Controllers
                 return Unauthorized();
             if (userId != int.Parse(Helpers.Claims.ClaimsArr[0].Value))
                 return Unauthorized();
+            var account = await _accountTransactionService.GetAccount(accountNr);
+            if (account != null)
+            {
+                var transactionList = await _accountTransactionService.GetAccountTransactions(accountNr);
+                return Ok(transactionList);
+            }
+            else
+            {
+                return BadRequest("Account does not exit, Please create one");
+            }
+        }
 
-            var transactionList = await _accountTransactionService.GetAccountTransactions(accountNr);
-            return Ok(transactionList);
+        /// <summary>
+        /// Get account balance
+        /// </summary>
+        /// <returns></returns>
+        // GET: api/<TransactionController>
+        [HttpGet("accountbalance")]
+        public async Task<IActionResult> GetAccountBalance(int userId, long accountNr)
+        {
 
+            if (Helpers.Claims.ClaimsArr == null)
+                return Unauthorized();
+            if (userId != int.Parse(Helpers.Claims.ClaimsArr[0].Value))
+                return Unauthorized();
+            var balance = await _accountTransactionService.GetAccountBalance(accountNr);
+            if (balance != 0)
+                return Ok(balance);
+            else
+                return BadRequest("Transaction had an issue try again later");
         }
     }
 }

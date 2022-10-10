@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Customer_API.Migrations
 {
     [DbContext(typeof(AccountTransactionDbContext))]
-    [Migration("20221010094652_AccountTransactionDB")]
+    [Migration("20221010105648_AccountTransactionDB")]
     partial class AccountTransactionDB
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

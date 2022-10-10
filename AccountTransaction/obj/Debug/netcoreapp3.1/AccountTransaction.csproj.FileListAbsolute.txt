@@ -124,7 +124,6 @@ C:\Users\CT301728\Documents\Nqobile\Absa\AccountTransaction\AccountTransaction\b
 C:\Users\CT301728\Documents\Nqobile\Absa\AccountTransaction\AccountTransaction\bin\Debug\netcoreapp3.1\runtimes\win-arm64\native\e_sqlite3.dll
 C:\Users\CT301728\Documents\Nqobile\Absa\AccountTransaction\AccountTransaction\bin\Debug\netcoreapp3.1\runtimes\win-x64\native\e_sqlite3.dll
 C:\Users\CT301728\Documents\Nqobile\Absa\AccountTransaction\AccountTransaction\bin\Debug\netcoreapp3.1\runtimes\win-x86\native\e_sqlite3.dll
-C:\Users\CT301728\Documents\Nqobile\Absa\AccountTransaction\AccountTransaction\obj\Debug\netcoreapp3.1\AccountTransaction.csproj.AssemblyReference.cache
 C:\Users\CT301728\Documents\Nqobile\Absa\AccountTransaction\AccountTransaction\obj\Debug\netcoreapp3.1\AccountTransaction.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\CT301728\Documents\Nqobile\Absa\AccountTransaction\AccountTransaction\obj\Debug\netcoreapp3.1\AccountTransaction.AssemblyInfoInputs.cache
 C:\Users\CT301728\Documents\Nqobile\Absa\AccountTransaction\AccountTransaction\obj\Debug\netcoreapp3.1\AccountTransaction.AssemblyInfo.cs
@@ -155,3 +154,4 @@ C:\Users\CT301728\Documents\Nqobile\Absa\AccountTransaction\AccountTransaction\b
 C:\Users\CT301728\Documents\Nqobile\Absa\AccountTransaction\AccountTransaction\bin\Debug\netcoreapp3.1\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 C:\Users\CT301728\Documents\Nqobile\Absa\AccountTransaction\AccountTransaction\bin\Debug\netcoreapp3.1\Microsoft.IdentityModel.Protocols.dll
 C:\Users\CT301728\Documents\Nqobile\Absa\AccountTransaction\AccountTransaction\bin\Debug\netcoreapp3.1\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\CT301728\Documents\Nqobile\Absa\AccountTransaction\AccountTransaction\obj\Debug\netcoreapp3.1\AccountTransaction.csproj.AssemblyReference.cache

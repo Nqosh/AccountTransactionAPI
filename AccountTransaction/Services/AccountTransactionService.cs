@@ -1,5 +1,6 @@
 ﻿using AccountTransaction.Data;
 using AccountTransaction.Model;
+using Customer_API.DTOs;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ namespace AccountTransaction.Services
             _context = context;
             _logger = logger;
         }
-        public async Task<bool> DepositWithDrawal(Guid referenceId, long accountNr, decimal amount)
+        public async Task<bool> DepositWithDrawal(Guid referenceId, long accountNr, decimal amount, Account account)
         {
             _logger.LogInformation("Checking duplicate transaction");
 
@@ -27,38 +28,14 @@ namespace AccountTransaction.Services
             {
                 _logger.LogInformation("Getting account from database");
 
-                Account account = GetAccount(accountNr);
+      
 
                 switch (Helpers.TransactionType.Type)
                 {
                     case TransactionType.Deposit:
 
                         _logger.LogInformation("Entering the deposit transaction process");
-
-                        if (account == null)
-                        {
-                            _logger.LogInformation("Checking account counter");
-
-                            var accountCounter = GetAccountCount();
-                            accountCounter++;
-                            var isAccountCreated = await CreateAccount(new Account { Id = accountCounter, referenceId = referenceId, AccountNr = accountNr, Balance = amount });
-
-                            if (isAccountCreated)
-                            {
-                                _logger.LogInformation("Adding transaction for a deposit transation");
-                                // add the Transaction to Transaction Table for Audit
-                                if (AddTransaction(referenceId, accountNr, 0, amount, amount))
-                                {
-                                    if (TrySave())
-                                    {
-                                        return true;
-                                    }
-                                }
-                            }
-                            return false;
-                        }
-                        else
-                        {
+                        
                             if (amount > 0)
                             {
                                 account.Balance += amount;
@@ -66,7 +43,7 @@ namespace AccountTransaction.Services
                                 _logger.LogInformation("Adding transaction for an additional deposit transation");
 
                                 // add the Transaction to Transaction Table for Audit
-                                if (AddTransaction(referenceId, accountNr, 0, account.Balance, amount))
+                                if (AddTransaction(referenceId, accountNr, 0, account.Balance, amount, TransactionType.Deposit))
                                 {
                                     if (TrySave())
                                     {
@@ -79,13 +56,11 @@ namespace AccountTransaction.Services
                             {
                                 throw new ApplicationException("deposit an amount more than zero!!");
                             }
-                        }
+                        
                     case TransactionType.Withdrawal:
 
                         _logger.LogInformation("Entering the Withdrawal transaction process");
-
-                        if (account != null)
-                        {
+                    
                             if (account.Balance < amount)
                             {
                                 throw new ApplicationException("insufficient funds");
@@ -107,7 +82,7 @@ namespace AccountTransaction.Services
 
                             _logger.LogInformation("Adding Withdrawal transaction");
                             // add the Transaction to Transaction Table for Audit
-                            if (AddTransaction(referenceId, accountNr, 0, account.Balance, amount))
+                            if (AddTransaction(referenceId, accountNr, 0, account.Balance, amount, TransactionType.Withdrawal))
                             {
                                 if (TrySave())
                                 {
@@ -115,11 +90,6 @@ namespace AccountTransaction.Services
                                 }
                             }
                             return false;
-                        }
-                        else
-                        {
-                            throw new ApplicationException("Account Doesnt Exist, Please Deposit First!!");
-                        }
                     default:
                         break;
                 }
@@ -153,8 +123,8 @@ namespace AccountTransaction.Services
             if (!isDuplicate)
             {
                 _logger.LogInformation("Get accounts for both accounts to transfer");
-                Account fromAccount = GetAccount(accountNrFrom);
-                Account toAccount = GetAccount(AccountNrTo);
+                Account fromAccount = await GetAccount(accountNrFrom);
+                Account toAccount = await GetAccount(AccountNrTo);
 
                 if (fromAccount != null && toAccount != null)
                 {
@@ -172,8 +142,8 @@ namespace AccountTransaction.Services
 
                 _logger.LogInformation("Adding Transfer transaction");
 
-                if (AddTransaction(referenceId, toAccount.AccountNr, 0, toAccount.Balance, amount))
-                    if (AddTransaction(referenceId, fromAccount.AccountNr, 0, fromAccount.Balance, amount))
+                if (AddTransaction(referenceId, toAccount.AccountNr, 0, toAccount.Balance, amount,TransactionType.Deposit))
+                    if (AddTransaction(referenceId, fromAccount.AccountNr, 0, fromAccount.Balance, amount, TransactionType.Withdrawal))
                     {
                         if (TrySave())
                         {
@@ -188,7 +158,7 @@ namespace AccountTransaction.Services
                 return false;
             }
         }
-        public async Task<bool> CreateAccount(Account account)
+        public async Task<bool> CreateAccount(CreateAccountDto account)
         {
             if (account != null)
             {
@@ -235,17 +205,21 @@ namespace AccountTransaction.Services
             }
             return false;
         }
-        private Account GetAccount(long accountNr)
+
+        public async Task<Account> GetAccount(long accountNr)
         {
-            Account account = _context.Accounts.FirstOrDefault(x => x.AccountNr == accountNr);
-            return account;
+            var account = _context.Accounts.FirstOrDefault(x => x.AccountNr == accountNr);
+            if (account != null)
+                return account;
+            else return null;
         }
+     
         private int GetAccountCount()
         {
             int count = _context.Accounts.Count();
             return count;
         }
-        private bool AddTransaction(Guid referenceId, long accountNr, long AccountNrTo, decimal balance, decimal amount)
+        private bool AddTransaction(Guid referenceId, long accountNr, long AccountNrTo, decimal balance, decimal amount, TransactionType transactionType)
         {
             try
             {
@@ -257,7 +231,7 @@ namespace AccountTransaction.Services
                     referenceId = referenceId,
                     AccountNr = accountNr,
                     Balance = balance,
-                    Amount = -amount
+                    Amount = transactionType == TransactionType.Withdrawal ? -amount : amount
                 });
             }
             catch (Exception ex)
@@ -270,6 +244,11 @@ namespace AccountTransaction.Services
         {
             int count = _context.Transactions.Count();
             return count;
+        }
+        public async Task<decimal> GetAccountBalance(long accountNr)
+        {
+            var account = _context.Accounts.Where(x => x.AccountNr == accountNr).FirstOrDefault();
+            return account.Balance;
         }
     }
 }
