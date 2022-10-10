@@ -12,9 +12,9 @@ You can download the solution by doing a git clone on (powershell, gitbash or an
 5) To deposit here is an example of how you would fille the swagger form below
 You can use the below link to generate a guid for the refrenceId 
 https://www.guidgenerator.com/online-guid-generator.aspx
-On the Transaction Types 
-1 - One is for Withdrawal 
-2 - Two is for Deposit
+# On the Transaction Types 
+- 1 is for Withdrawal 
+- 2 is for Deposit
 6) The below example is a deposit transaction to the account created 
 ![image](https://user-images.githubusercontent.com/31209722/194861710-d5471e5c-3aae-4e78-b1e3-82154a3b4ea4.png)
 7) An example of a Withdrawal transaction looks like the one below 
